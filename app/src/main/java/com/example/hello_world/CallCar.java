@@ -7,6 +7,7 @@ import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapStatusUpdate;
@@ -34,6 +35,11 @@ public class CallCar extends AppCompatActivity {
         mapView = (MapView)findViewById(R.id.bmapView);
         baiduMap = mapView.getMap();
         baiduMap.setMyLocationEnabled(true);
+        LocationClientOption option = new LocationClientOption();
+        option.setOpenGps(true); // 打开gps
+        option.setCoorType("bd09ll"); // 设置定位坐标系（百度经纬度坐标系 ：bd09ll）,很重要，能让定位更准
+        option.setScanSpan(1000);//设施扫描间隔时间
+        mLocationClient.setLocOption(option);//将参数添加进客户端
         mLocationClient.start();
     }
 
