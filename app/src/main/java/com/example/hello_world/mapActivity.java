@@ -16,5 +16,6 @@ public class mapActivity extends AppCompatActivity {
         imageView = (ImageView)findViewById(R.id.imageViewId);
         imageView.setImageResource(R.drawable.cas);
         //wori
+        //axiba
     }
 }
