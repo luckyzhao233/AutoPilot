@@ -2,6 +2,8 @@ package com.example.hello_world;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
@@ -16,14 +18,19 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 public class CallCar extends AppCompatActivity {
 
     private MapView mapView;
     private BaiduMap baiduMap;
+    private Button callCarButton;
     public LocationClient mLocationClient;
     private boolean isFirstLocate = true;
+    double Latitude,Longitude;
+    short i = -1;//点一次呼叫小车，加1
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +40,7 @@ public class CallCar extends AppCompatActivity {
         SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.call_car);
         mapView = (MapView)findViewById(R.id.bmapView);
+        callCarButton =(Button)findViewById(R.id.callCarButtonId);
         baiduMap = mapView.getMap();
         baiduMap.setMyLocationEnabled(true);
         LocationClientOption option = new LocationClientOption();
@@ -41,6 +49,7 @@ public class CallCar extends AppCompatActivity {
         option.setScanSpan(1000);//设施扫描间隔时间
         mLocationClient.setLocOption(option);//将参数添加进客户端
         mLocationClient.start();
+        callCarButton.setOnClickListener(new ButtonListener4());
     }
 
     private void navigateTo(BDLocation location){
@@ -58,6 +67,23 @@ public class CallCar extends AppCompatActivity {
         locationBulider.longitude(location.getLongitude());
         MyLocationData locationData = locationBulider.build();
         baiduMap.setMyLocationData(locationData);
+        Latitude = location.getLatitude();
+        Longitude = location.getLongitude();
+    }
+
+    class ButtonListener4 implements View.OnClickListener {
+
+        @Override
+        public void onClick(View view) {
+
+            try {
+                i++;
+                SendLocation sendLocation = new SendLocation();
+                sendLocation.onCreate(Latitude,Longitude,i);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public class MyLocationListener extends BDAbstractLocationListener {
