@@ -23,82 +23,7 @@ import java.util.concurrent.Executors;
 import static android.os.SystemClock.sleep;
 
 public class SendLocation extends AppCompatActivity {
-    //    byte Identifier = 0x7e;
-//    short LocationMsgId = 0x0200;//位置信息ID
-                                    //消息体属性
-//    byte Phone[] = {0x01,(byte)0x86,0x55,0x03,0x72,0x59};//java里byte是有符号数，大于0x80的是负数
-//    short FlowNum = 0x0000;//消息流水号
-    //消息体---------------------------------------------
-//    int AlarmSign = 0x00000000;//报警标志
-//    int Status = 0x00000000;//状态
-//    int Latitude = 0x00000000;//纬度
-//    int Longitude = 0x00000000;//经度
-//    short Hight = 0x0000;//高度
-//    short Speed = 0x0000;//速度
-//    short Direction = 0x0000;//方向
-//    byte time[] = {0x00,0x00,0x00,0x00,0x00,0x00};//时间
-//    byte ExLocationMsgId = 0x20;//保留的附加信息ID
-//    byte ExLocationMsgLength = 0x00;//附加信息长度
-//    byte ExMsg[] = {0x00};//附加信息
-    //消息体----------------------------------------------
-//    byte Check = 0x00;//校验码
-//
-//    String sIdentifier = Identifier + "";
-//    String sLocationMsgId = LocationMsgId + "";
-//    String sPhone = Phone + "";
-//    String sFlowNum = FlowNum + "";
-//    String sAlarmSign = AlarmSign + "";
-//    String sStatus = Status + "";
-//    String sLatitude = Latitude + "";
-//    String sLongitude = Longitude + "";
-//    String sHight = Hight + "";
-//    String sSpeed = Speed + "";
-//    String sDirection = Direction + "";
-//    String stime = time + "";
-//    String sExLocationMsgId = ExLocationMsgId + "";
-//    String sExLocationMsgLength = ExLocationMsgLength + "";
-//    String sExMsg = ExMsg + "";
-//
-//    //消息头和消息体
-//    String sMsg = sLocationMsgId+sPhone+sFlowNum+sAlarmSign+sStatus+sLatitude+sLongitude+sHight
-//            +sSpeed+sDirection+stime+sExLocationMsgId+sExLocationMsgLength+sExMsg;
-//    byte[] Msg = sMsg.getBytes();
 
-
-    byte[] LocationMsg = {0x7e,0x02,0x00,0x00,0x1f,0x01,(byte)0x86,0x55,0x03,0x72,0x59,0x00,0x00,
-            //消息体------------------------------------------
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,0x00,0x00,0x00,//纬度
-            0x00,0x00,0x00,0x00,//经度
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x01,
-            0x7e,//附加信息
-            //消息体-------------------------------------------
-            0x00,0x7e,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00//预留的多余长度，为了放多出来的转义字符
-    };
-
-    byte[] RegisterMsg = {0x7e,0x01,0x00,0x00,0x1f,0x01,(byte)0x86,0x55,0x03,0x72,0x59,
-            0x00,0x00,//流水号
-            //消息体------------------------------------------
-            0x00,0x22,//省域ID
-            0x00,0x68,//市域ID
-            0x00,0x00,0x00,0x00,0x00,//制造商ID
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//终端型号
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,//终端ID
-            0x00,//车牌颜色
-            0x00,//车牌标识，string类型的
-            //消息体-------------------------------------------
-            0x00,0x7e,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00//预留的多余长度，为了放多出来的转义字符
-    };
-
-    byte[] HeartMsg = {0x7e,0x00,0x02,0x00,0x00,0x01,(byte)0x86,0x55,0x03,0x72,0x59,0x00,0x00,
-            //消息体-为空-----------------------------------------
-
-            //消息体-------------------------------------------
-            0x00,0x7e,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00//预留的多余长度，为了放多出来的转义字符
-    };
     // 主线程Handler
     // 用于将从服务器获取的消息显示出来
     private Handler mMainHandler;
@@ -138,74 +63,33 @@ public class SendLocation extends AppCompatActivity {
     public SendLocation() throws UnsupportedEncodingException {
     }
 
-
-    //将数组求校验码并转义
-    public byte[] operate(byte[] M){
-
-        //预留的用于放多出来的转义字符的大小
-        int temp = 12;
-        /*/
-            求校验码
-         */
-        byte Check = 0x00;
-        for (int i = 1; i < M.length - 1 - temp; i++) {
-            Check ^= M[i];
-            if (i == M.length - 2 - temp)
-                M[i] = Check;
-        }
-        /*/
-            转义
-         */
-        for (int i = 1; i < M.length - 1 - temp; ++i) {//在两个标志位中间找0x7e
-            if (M[i] == 0x7e) {
-                M[i] = 0x7d;
-                for (int j = M.length - 1; j > i; j--) {
-                    M[j] = M[j - 1]; //"7e"所在下标开始的元素后移一个位置
-                }
-                M[i + 1] = 0x02;
-            }
-        }
-        /*/
-            将预留位去除
-         */
-        int z, j = 0;
-        for (z = 0; z < M.length - 1; ++z) {
-            if (M[z] == 0x7e) {
-                ++j;
-                if (j == 2)
-                    break;
-            }
-        }
-        byte[] Msg = new byte[z + 1];//新建的用于存储截取后的数组的数组
-        System.arraycopy(M, 0, Msg, 0, z + 1);
-        return Msg;
-    }
     protected void onCreate(double Latitude,double Longitude,short FlowNum) {
 
         /**
          * 初始化操作
          */
 
+        final MsgHandling mH = new MsgHandling();
+
+        final char[] rcvMsg = new char[1024]; // 用来接收数据的数组
         int heartThreadNum = 0;
+        int WhichMsg = 0;
         long Latitude1 = (long)(Latitude*1000000);
         long Longitude1 =(long)(Longitude*1000000);
 
         //将经纬度信息写入Msg中
-        LocationMsg[21]= (byte) (Latitude1 >> 24);
-        LocationMsg[22]= (byte) (Latitude1 >> 16);
-        LocationMsg[23]= (byte) (Latitude1 >> 8);
-        LocationMsg[24]= (byte) (Latitude1 >> 0);
-        LocationMsg[25]= (byte) (Longitude1 >> 24);
-        LocationMsg[26]= (byte) (Longitude1 >> 16);
-        LocationMsg[27]= (byte) (Longitude1 >> 8);
-        LocationMsg[28]= (byte) (Longitude1 >> 0);
+        mH.LocationMsg[21]= (byte) (Latitude1 >> 24);
+        mH.LocationMsg[22]= (byte) (Latitude1 >> 16);
+        mH.LocationMsg[23]= (byte) (Latitude1 >> 8);
+        mH.LocationMsg[24]= (byte) (Latitude1 >> 0);
+        mH.LocationMsg[25]= (byte) (Longitude1 >> 24);
+        mH.LocationMsg[26]= (byte) (Longitude1 >> 16);
+        mH.LocationMsg[27]= (byte) (Longitude1 >> 8);
+        mH.LocationMsg[28]= (byte) (Longitude1 >> 0);
 
         //将流水号写入Msg中
-        LocationMsg[11] = (byte) (FlowNum >> 8);
-        LocationMsg[12] = (byte) (FlowNum >> 0);
-
-        // 初始化线程池
-        mThreadPool = Executors.newFixedThreadPool(5);
+        mH.LocationMsg[11] = (byte) (FlowNum >> 8);
+        mH.LocationMsg[12] = (byte) (FlowNum >> 0);
 
         // 实例化主线程,用于更新接收过来的消息
         mMainHandler = new Handler() {
@@ -220,174 +104,168 @@ public class SendLocation extends AppCompatActivity {
         };
 
 
-            /**
-             * 创建客户端 & 服务器的连接
-             */
+        //连接服务器的线程
+        class Thread1 implements Runnable{
+            @Override
+            public void run() {
 
-            // 利用线程池直接开启一个线程 & 执行该线程
-            mThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
+                try {
 
-                    try {
-
-                        sleep(100);
+//                    sleep(100);
                         // 创建Socket对象 & 指定服务端的IP 及 端口号
-                        for(int i =1;i<100;i++) {
-                            socket = new Socket("47.100.44.138", 8801);
+                        socket = new Socket("192.168.254.134", 8801);
 
 
-                            // 判断客户端和服务器是否连接成功
-                            System.out.println(socket.isConnected());
-                        }
+                        // 判断客户端和服务器是否连接成功
+                        System.out.println(socket.isConnected());
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-            });
-
-
-            mThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-
-                        while (true) {
-                            sleep(1000);
-
-                            // 步骤1：创建输入流对象InputStream
-                            is = socket.getInputStream();
-
-                            // 步骤2：创建输入流读取器对象 并传入输入流对象
-                            // 该对象作用：获取服务器返回的数据
-                            isr = new InputStreamReader(is);
-                            br = new BufferedReader(isr);
-
-                            // 步骤3：通过输入流读取器对象 接收服务器发送过来的数据
-                            response = br.readLine();
-
-                            // 步骤4:通知主线程,将接收的消息显示到界面
-                            Message msg = Message.obtain();
-                            msg.what = 0;
-                            mMainHandler.sendMessage(msg);
-
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-            });
-
-
-//            }
-//        });
-
-            /**
-             * 接收 服务器消息
-             */
-            // 利用线程池直接开启一个线程 & 执行该线程
-            mThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        try {
-                            sleep(3000);
-                            // 步骤1：创建输入流对象InputStream
-                            is = socket.getInputStream();
-
-                            // 步骤2：创建输入流读取器对象 并传入输入流对象
-                            // 该对象作用：获取服务器返回的数据
-                            isr = new InputStreamReader(is);
-                            br = new BufferedReader(isr);
-
-                            // 步骤3：通过输入流读取器对象 接收服务器发送过来的数据
-                            response = br.readLine();
-
-                            // 步骤4:通知主线程,将接收的消息显示到界面
-                            Message msg = Message.obtain();
-                            msg.what = 0;
-                            mMainHandler.sendMessage(msg);
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
-            });
-
-
-
-            /**
-             * 发送消息 给 服务器
-             */
-
-            // 利用线程池直接开启一个线程 & 执行该线程
-            mThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-
-                        sleep(500);
-                            byte[] LMsg = operate(LocationMsg);//位置消息
-                            byte[] RMsg = operate(RegisterMsg);//注册消息
-
-//                            String sCheck = Check+"";
-//                            sMsg=sIdentifier+sMsg+sCheck+sIdentifier;
-                        // 步骤1：从Socket 获得输出流对象OutputStream
-                        // 该对象作用：发送数据
-                        outputStream = socket.getOutputStream();
-
-                        // 步骤2：写入需要发送的数据到输出流对象中
-//                            outputStream.write((mEdit.getText().toString() + "\n").getBytes("utf-8"));
-                        // 特别注意：数据的结尾加上换行符才可让服务器端的readline()停止阻塞
-                        outputStream.write(RMsg);
-
-                        // 步骤3：发送数据到服务端
-                        outputStream.flush();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-
-                }
-            });
-
-        /**
-         * 发送心跳包
-         */
-        if(heartThreadNum == 0) {
-            heartThreadNum = 1;
-            mThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    short FlowNum = -1;
-                    while (true) {
-                        try {
-                            //每5s发送一个心跳包
-                            sleep(5000);
-                            FlowNum++;
-                            HeartMsg[11] = (byte) (FlowNum >> 8);
-                            HeartMsg[12] = (byte) (FlowNum >> 0);
-                            byte[] Msg = operate(HeartMsg);
-                            outputStream = socket.getOutputStream();
-                            outputStream.write(Msg);
-                            outputStream.flush();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
+            }
         }
 
+        //发送注册信息的线程
+        class Thread2 implements Runnable{
+            @Override
+            public void run() {
 
+                try {
+
+                    byte[] RMsg = mH.operate(mH.RegisterMsg);//注册消息
+//                    byte[] JMsg = mH.operate(mH.JQMsg);//鉴权消息
+//                    byte[] LMsg = mH.operate(mH.LocationMsg);//位置消息
+
+                    // 步骤1：从Socket 获得输出流对象OutputStream
+                    // 该对象作用：发送数据
+                    outputStream = socket.getOutputStream();
+
+                    // 步骤2：写入需要发送的数据到输出流对象中
+//                            outputStream.write((mEdit.getText().toString() + "\n").getBytes("utf-8"));
+                    // 特别注意：数据的结尾加上换行符才可让服务器端的readline()停止阻塞
+
+                    outputStream.write(RMsg);
+
+                    // 步骤3：发送数据到服务端
+                    outputStream.flush();
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }
+
+        //接收服务器消息的线程
+        class Thread3 implements Runnable{
+            @Override
+            public void run() {
+
+                try {
+
+                        // 步骤1：创建输入流对象InputStream
+                        is = socket.getInputStream();
+
+                        // 步骤2：创建输入流读取器对象 并传入输入流对象
+                        // 该对象作用：获取服务器返回的数据
+                        isr = new InputStreamReader(is);
+                        br = new BufferedReader(isr);
+
+                        // 步骤3：通过输入流读取器对象 接收服务器发送过来的数据
+                        br.read(rcvMsg);
+//                        response = Integer.toHexString(bytes[0]);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        //发送鉴权信息的线程
+        class Thread4 implements Runnable{
+            @Override
+            public void run() {
+                try {
+                    byte[] JMsg = mH.operate(mH.JQMsg);//鉴权消息
+                    outputStream = socket.getOutputStream();
+                    outputStream.write(JMsg);
+                    outputStream.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        //发送位置信息的线程
+        class Thread5 implements Runnable{
+            @Override
+            public void run() {
+                try {
+                    byte[] LMsg = mH.operate(mH.LocationMsg);//鉴权消息
+                    outputStream = socket.getOutputStream();
+                    outputStream.write(LMsg);
+                    outputStream.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+//        //发送心跳包的线程
+//        if(heartThreadNum == 0) {
+//            heartThreadNum = 1;
+//            class Thread4 implements Runnable{
+//                @Override
+//                public void run() {
+//                    short FlowNum = -1;
+//                    while (true) {
+//                        try {
+//                            //每5s发送一个心跳包
+//                            sleep(5000);
+//                            FlowNum++;
+//                            mH.HeartMsg[11] = (byte) (FlowNum >> 8);
+//                            mH.HeartMsg[12] = (byte) (FlowNum >> 0);
+//                            byte[] Msg = mH.operate(mH.HeartMsg);
+//                            outputStream = socket.getOutputStream();
+//                            outputStream.write(Msg);
+//                            outputStream.flush();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+        Thread thread1 = new Thread(new Thread1());
+        thread1.start();
+        try {
+            thread1.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Thread thread2 = new Thread(new Thread2());
+        thread2.start();
+        Thread thread3 = new Thread(new Thread3());
+        thread3.start();
+        try {
+            thread3.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if(rcvMsg[28] == 0x7e) {
+            Thread thread4 = new Thread(new Thread4());
+            thread4.start();
+        }
+        if(rcvMsg[19] == 0x7e) {
+            Thread thread5 = new Thread(new Thread5());
+            thread5.start();
+        }
+//        thread3.start();
 
         /**
          * 断开客户端 & 服务器的连接
@@ -416,6 +294,6 @@ public class SendLocation extends AppCompatActivity {
 //            }
 //        });
 
-
     }
+
 }
