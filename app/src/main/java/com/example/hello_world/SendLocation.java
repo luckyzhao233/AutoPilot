@@ -1,12 +1,9 @@
 package com.example.hello_world;
 
-import android.os.Bundle;
+import android.app.AlertDialog;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -16,9 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static android.os.SystemClock.sleep;
 
@@ -72,6 +67,7 @@ public class SendLocation extends AppCompatActivity {
         final MsgHandling mH = new MsgHandling();
 
         final char[] rcvMsg = new char[1024]; // 用来接收数据的数组
+        final boolean isRcved = true;
         int heartThreadNum = 0;
         int WhichMsg = 0;
         long Latitude1 = (long)(Latitude*1000000);
@@ -114,10 +110,7 @@ public class SendLocation extends AppCompatActivity {
 //                    sleep(100);
                         // 创建Socket对象 & 指定服务端的IP 及 端口号
                         socket = new Socket("192.168.254.134", 8801);
-
-
-                        // 判断客户端和服务器是否连接成功
-                        System.out.println(socket.isConnected());
+                        sleep(100000);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -174,15 +167,20 @@ public class SendLocation extends AppCompatActivity {
                         isr = new InputStreamReader(is);
                         br = new BufferedReader(isr);
 
+
                         // 步骤3：通过输入流读取器对象 接收服务器发送过来的数据
                         br.read(rcvMsg);
 //                        response = Integer.toHexString(bytes[0]);
+
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
             }
+
+
+
         }
 
         //发送鉴权信息的线程
@@ -243,17 +241,13 @@ public class SendLocation extends AppCompatActivity {
 
         Thread thread1 = new Thread(new Thread1());
         thread1.start();
-        try {
-            thread1.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep(100);
         Thread thread2 = new Thread(new Thread2());
         thread2.start();
-        Thread thread3 = new Thread(new Thread3());
-        thread3.start();
+        Thread thread3_0 = new Thread(new Thread3());
+        thread3_0.start();
         try {
-            thread3.join();
+            thread3_0.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -261,11 +255,18 @@ public class SendLocation extends AppCompatActivity {
             Thread thread4 = new Thread(new Thread4());
             thread4.start();
         }
+        Thread thread3_1 = new Thread(new Thread3());
+        thread3_1.start();
+        try {
+            thread3_1.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if(rcvMsg[19] == 0x7e) {
             Thread thread5 = new Thread(new Thread5());
             thread5.start();
         }
-//        thread3.start();
+
 
         /**
          * 断开客户端 & 服务器的连接
