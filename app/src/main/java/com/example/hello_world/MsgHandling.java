@@ -1,5 +1,7 @@
 package com.example.hello_world;
 
+import android.text.format.Time;
+
 public class MsgHandling {      //将消息进行校验转义处理
 
     public byte[] RegisterMsg = {0x7e,0x01,0x00,0x00,0x36,0x01,(byte)0x86,0x55,0x03,0x72,0x59,
@@ -21,7 +23,7 @@ public class MsgHandling {      //将消息进行校验转义处理
             0x01,(byte)0x86,0x55,0x03,0x72,0x59,
             0x00,0x01,
             //消息体------------------------------------------
-            0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,
+            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
             //消息体------------------------------------------
             0x00,0x7e,
             0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00//预留的多余长度，为了放多出来的转义字符
@@ -90,5 +92,44 @@ public class MsgHandling {      //将消息进行校验转义处理
         byte[] Msg = new byte[z + 1];//新建的用于存储截取后的数组的数组
         System.arraycopy(M, 0, Msg, 0, z + 1);
         return Msg;
+    }
+
+    //将服务器返回的鉴权码插入到鉴权消息中
+    public final void JQ_operate(char[] M){
+        JQMsg[13] = (byte)M[16];
+        JQMsg[14] = (byte)M[17];
+        JQMsg[15] = (byte)M[18];
+        JQMsg[16] = (byte)M[19];
+        JQMsg[17] = (byte)M[20];
+        JQMsg[18] = (byte)M[21];
+        JQMsg[19] = (byte)M[22];
+        JQMsg[20] = (byte)M[23];
+        JQMsg[21] = (byte)M[24];
+
+    }
+
+    //添加时间
+    public void insertTime(byte[] LMsg){
+        Time t=new Time();
+        t.setToNow(); // 取得系统时间。
+        int year = t.year;
+        year = (year-2000)+((year-2000)/10)*6;
+        int month = t.month+1;
+        month=month+(month/10)*6;
+        int day = t.monthDay;
+        day = day + (day/10)*6;
+        int hour = t.hour; // 0-23
+        hour = hour + (hour/10)*6;
+        int minute = t.minute;
+        minute = minute + (minute/10)*6;
+        int second = t.second;
+        second = second + (second/10)*6;
+
+        LMsg[35] = (byte)year;
+        LMsg[36] = (byte)month;
+        LMsg[37] = (byte)day;
+        LMsg[38] = (byte)hour;
+        LMsg[39] = (byte)minute;
+        LMsg[40] = (byte)second;
     }
 }

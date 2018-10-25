@@ -1,6 +1,8 @@
 package com.example.hello_world;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -80,6 +82,26 @@ public class CallCar extends AppCompatActivity {
                 i++;
                 SendLocation sendLocation = new SendLocation();
                 sendLocation.onCreate(Latitude,Longitude,i);
+                //成功发送位置消息，则打开对话框显示等待小车到达
+                if (sendLocation.Send){
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(CallCar.this);
+                    dialog.setTitle("Dialog");
+                    dialog.setMessage("已呼叫小车，等待小车到达");
+                    dialog.setCancelable(false);
+                    dialog.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    dialog.setNegativeButton("cancle", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    dialog.show();
+                }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }

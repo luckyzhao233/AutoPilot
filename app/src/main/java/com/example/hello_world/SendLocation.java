@@ -19,6 +19,8 @@ import static android.os.SystemClock.sleep;
 
 public class SendLocation extends AppCompatActivity {
 
+    public boolean Send = false;
+
     // 主线程Handler
     // 用于将从服务器获取的消息显示出来
     private Handler mMainHandler;
@@ -67,7 +69,6 @@ public class SendLocation extends AppCompatActivity {
         final MsgHandling mH = new MsgHandling();
 
         final char[] rcvMsg = new char[1024]; // 用来接收数据的数组
-        final boolean isRcved = true;
         int heartThreadNum = 0;
         int WhichMsg = 0;
         long Latitude1 = (long)(Latitude*1000000);
@@ -109,8 +110,10 @@ public class SendLocation extends AppCompatActivity {
 
 //                    sleep(100);
                         // 创建Socket对象 & 指定服务端的IP 及 端口号
-                        socket = new Socket("192.168.254.134", 8801);
-                        sleep(100000);
+                        socket = new Socket("47.100.44.138", 8801);
+                        while (true) {
+                            sleep(100000);
+                        }
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -203,7 +206,8 @@ public class SendLocation extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    byte[] LMsg = mH.operate(mH.LocationMsg);//鉴权消息
+                    mH.insertTime(mH.LocationMsg);
+                    byte[] LMsg = mH.operate(mH.LocationMsg);//位置消息
                     outputStream = socket.getOutputStream();
                     outputStream.write(LMsg);
                     outputStream.flush();
@@ -213,31 +217,29 @@ public class SendLocation extends AppCompatActivity {
             }
         }
 
-//        //发送心跳包的线程
-//        if(heartThreadNum == 0) {
-//            heartThreadNum = 1;
-//            class Thread4 implements Runnable{
-//                @Override
-//                public void run() {
-//                    short FlowNum = -1;
-//                    while (true) {
-//                        try {
-//                            //每5s发送一个心跳包
-//                            sleep(5000);
-//                            FlowNum++;
-//                            mH.HeartMsg[11] = (byte) (FlowNum >> 8);
-//                            mH.HeartMsg[12] = (byte) (FlowNum >> 0);
-//                            byte[] Msg = mH.operate(mH.HeartMsg);
-//                            outputStream = socket.getOutputStream();
-//                            outputStream.write(Msg);
-//                            outputStream.flush();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            }
-//        }
+       //发送心跳包的线程
+        class HeartThread implements Runnable{
+            @Override
+            public void run() {
+                short FlowNum = -1;
+                while (true) {
+                    try {
+                        //每30s发送一个心跳包
+                        sleep(30000);
+                        FlowNum++;
+                        mH.HeartMsg[11] = (byte) (FlowNum >> 8);
+                        mH.HeartMsg[12] = (byte) (FlowNum >> 0);
+                        byte[] Msg = mH.operate(mH.HeartMsg);
+                        outputStream = socket.getOutputStream();
+                        outputStream.write(Msg);
+                        outputStream.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
 
         Thread thread1 = new Thread(new Thread1());
         thread1.start();
@@ -251,7 +253,8 @@ public class SendLocation extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        if(rcvMsg[28] == 0x7e) {
+        if(rcvMsg[26] == 0x7e) {    //如果收到平台注册返回，则发送鉴权指令
+            mH.JQ_operate(rcvMsg);
             Thread thread4 = new Thread(new Thread4());
             thread4.start();
         }
@@ -262,9 +265,21 @@ public class SendLocation extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        if(rcvMsg[19] == 0x7e) {
+        if(rcvMsg[15] == 0x01 && rcvMsg[16] == 0x02) {    //如果收到了平台鉴权返回，则发送位置指令
             Thread thread5 = new Thread(new Thread5());
             thread5.start();
+        }
+        Thread thread3_2 = new Thread(new Thread3());
+        thread3_2.start();
+        try {
+            thread3_2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if(rcvMsg[15] == 0x02 && rcvMsg[16] == 0x00) {      //如果收到了平台位置应答
+            Send = true;
+            Thread heartThread = new Thread(new HeartThread());
+            heartThread.start();
         }
 
 
