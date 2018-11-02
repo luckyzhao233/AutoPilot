@@ -29,21 +29,24 @@ public class MsgHandling {      //将消息进行校验转义处理
             0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00//预留的多余长度，为了放多出来的转义字符
     };
 
-    public byte[] LocationMsg = {0x7e,0x02,0x00,
-            0x00,0x28,//消息体属性，中包含消息体长度
-            0x01,(byte)0x86,0x55,0x03,0x72,0x59,
-            0x00,0x33,//流水号
-            //消息体------------------------------------------
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,(byte) 0x00,(byte)0x00,0x00,//纬度
-            0x00,(byte)0x00,(byte)0x00,(byte)0x00,//经度
-            0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x07,0x02,0x19,0x25,0x07,//前面的高度，速度，方向，后面是时间
-            0x20,0x0A,//附加id,长度
-            0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,//附加信息
-            //消息体-------------------------------------------
-            0x00,0x7e,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00//预留的多余长度，为了放多出来的转义字符
-    };
+//    public byte[] LocationMsg = {0x7e,0x02,0x00,
+//            0x00,0x28,//消息体属性，中包含消息体长度
+//            0x01,(byte)0x86,0x55,0x03,0x72,0x59,
+//            0x00,0x33,//流水号
+//            //消息体------------------------------------------
+//            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+//            0x00,(byte) 0x00,(byte)0x00,0x00,//纬度
+//            0x00,(byte)0x00,(byte)0x00,(byte)0x00,//经度
+//            0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x07,0x02,0x19,0x25,0x07,//前面的高度，速度，方向，后面是时间
+//            0x20,0x0A,//附加id,长度
+//            0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,//附加信息
+//            //消息体-------------------------------------------
+//            0x00,0x7e,
+//            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00//预留的多余长度，为了放多出来的转义字符
+//    };
+
+//    String sLocationMsg = "<ZC0123456789,ZCOK,31.823408370,117.116111109,60,181022215836>\r\n" ;
+    String start = "<ZC0123456789,ZCRQ,";
 
     public byte[] HeartMsg = {0x7e,0x00,0x02,0x00,0x00,0x01,(byte)0x86,0x55,0x03,0x72,0x59,0x00,0x00,
             //消息体-为空-----------------------------------------
@@ -109,27 +112,22 @@ public class MsgHandling {      //将消息进行校验转义处理
     }
 
     //添加时间
-    public void insertTime(byte[] LMsg){
+    public String insertTime(String time){
         Time t=new Time();
         t.setToNow(); // 取得系统时间。
         int year = t.year;
-        year = (year-2000)+((year-2000)/10)*6;
+        year = year-2000;
         int month = t.month+1;
-        month=month+(month/10)*6;
         int day = t.monthDay;
-        day = day + (day/10)*6;
         int hour = t.hour; // 0-23
-        hour = hour + (hour/10)*6;
         int minute = t.minute;
-        minute = minute + (minute/10)*6;
         int second = t.second;
-        second = second + (second/10)*6;
 
-        LMsg[35] = (byte)year;
-        LMsg[36] = (byte)month;
-        LMsg[37] = (byte)day;
-        LMsg[38] = (byte)hour;
-        LMsg[39] = (byte)minute;
-        LMsg[40] = (byte)second;
+        if(minute < 10)
+            time = year + "" +month+""+day+""+hour+""+ "0"+ minute+ "" + second+"";
+        else
+            time = year + "" +month+""+day+""+hour+"" + minute+ "" + second+"";
+        return time;
     }
+
 }
