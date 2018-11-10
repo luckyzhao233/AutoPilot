@@ -46,7 +46,7 @@ public class MsgHandling {      //将消息进行校验转义处理
 //    };
 
 //    String sLocationMsg = "<ZC0123456789,ZCOK,31.823408370,117.116111109,60,181022215836>\r\n" ;
-    String start = "<ZC0123456789,ZCRQ,";
+    String start = "<PH0123456789,ZCRQ,";
 
     public byte[] HeartMsg = {0x7e,0x00,0x02,0x00,0x00,0x01,(byte)0x86,0x55,0x03,0x72,0x59,0x00,0x00,
             //消息体-为空-----------------------------------------

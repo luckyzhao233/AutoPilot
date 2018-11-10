@@ -145,7 +145,7 @@ public class SendLocation extends AppCompatActivity {
             public void run() {
                     try {
                         time = mH.insertTime(time);
-                        String sLocationMsg = mH.start + sLatitude + "," + sLongtitude + "," + "00" + "," + time + ">\\r\\n";
+                        String sLocationMsg = mH.start + sLatitude + "," + sLongtitude + "," + "1000"  + ">\\r\\n";
                         outputStream = socket.getOutputStream();
                         outputStream.write(sLocationMsg.getBytes("utf-8"));
                         outputStream.flush();
@@ -171,10 +171,12 @@ public class SendLocation extends AppCompatActivity {
         double[] cararray = {0,0,00,00,0,0,0,0,00,0,0,0,00,0,0,0,0,0,0,0,00,0,0,0,00};
         if(response != null) {      //如果收到了平台位置应答
             String[] strarray=response.split(",|>");//得到一个List数组
-            int z = 0;
-            for(int i = 1; ((3*i)+1) < strarray.length;i++){
-                cararray[z] =  Double.parseDouble(strarray[3*i]);//纬度
-                cararray[z+1] =  Double.parseDouble(strarray[3*i+1]);//经度
+            int z = 2;
+            cararray[0] = Double.parseDouble(strarray[1]);//最近站点的经纬度
+            cararray[1] = Double.parseDouble(strarray[2]);
+            for(int i = 0; ((3*i)+ 6) < strarray.length;i++){
+                cararray[z] =  Double.parseDouble(strarray[3*i + 5]);//纬度
+                cararray[z+1] =  Double.parseDouble(strarray[3*i+6]);//经度
                 z = z+2;
             }
             Send = true;

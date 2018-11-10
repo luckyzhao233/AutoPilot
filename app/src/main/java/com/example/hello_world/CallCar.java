@@ -57,6 +57,7 @@ public class CallCar extends AppCompatActivity {
         option.setOpenGps(true); // 打开gps
 //        option.setCoorType("bd09ll"); // 设置定位坐标系（百度经纬度坐标系 ：bd09ll）,很重要，能让定位更准
         option.setScanSpan(1000);//设施扫描间隔时间
+        option.setPriority(LocationClientOption.NetWorkFirst); // 设置网络优先
         mLocationClient.setLocOption(option);//将参数添加进客户端
         mLocationClient.start();
         callCarButton.setOnClickListener(new ButtonListener4());
@@ -138,20 +139,31 @@ public class CallCar extends AppCompatActivity {
     }
 
     public void addCar(double[] carlocation){
-        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
-        BitmapDescriptor bitmap = BitmapDescriptorFactory
-                .fromResource(R.drawable.strawberry);
-        CoordinateConverter converter = new CoordinateConverter();
+
+        LatLng station_position = new LatLng(carlocation[0], carlocation[1]);
+        CoordinateConverter converter  = new CoordinateConverter();
         converter.from(CoordinateConverter.CoordType.GPS);
+        converter.coord(station_position);
+        LatLng BDstation_positon = converter.convert();
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.drawable.chezhan);
+        OverlayOptions option1 = new MarkerOptions().position(BDstation_positon).icon(bitmap);
+        baiduMap.addOverlay(option1);
+
+        List<OverlayOptions> options = new ArrayList<OverlayOptions>();
+        BitmapDescriptor bitmap1 = BitmapDescriptorFactory
+                .fromResource(R.drawable.car);
+        CoordinateConverter converter1 = new CoordinateConverter();
+        converter1.from(CoordinateConverter.CoordType.GPS);
 
         ///////////////////////////////////////////////////////////////////////////
-        for(int j = 0; j < carlocation.length-1;j = j+2) {
+        for(int j = 2; j < carlocation.length-1;j = j+2) {
             LatLng point = new LatLng(carlocation[j], carlocation[j+1]);
-            converter.coord(point);
-            LatLng BDpoint = converter.convert();
+            converter1.coord(point);
+            LatLng BDpoint = converter1.convert();
             options.add(new MarkerOptions()
                     .position(BDpoint)
-                    .icon(bitmap));
+                    .icon(bitmap1));
         }
          ///////////////////////////////////////////////////////////////////////////////////
 
